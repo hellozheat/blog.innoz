@@ -10,7 +10,7 @@ config = {
     // When running Ghost in the wild, use the production environment
     // Configure your URL and mail settings here
     production: {
-        url: 'http://my-ghost-blog.com',
+        url: 'https://blog-innozlab.herokuapp.com',
         mail: {},
         database: {
             client: 'sqlite3',
@@ -22,10 +22,20 @@ config = {
 
         server: {
             // Host to be passed to node's `net.Server#listen()`
-            host: '127.0.0.1',
+            host: '0.0.0.0',
             // Port to be passed to node's `net.Server#listen()`, for iisnode set this to `process.env.PORT`
-            port: '2368'
+            port: process.env.PORT
+        },
+        storage: {
+        active: 'ghost-s3',
+        'ghost-s3': {
+            accessKeyId: 'aws access key from IAM service',
+            secretAccessKey: 'aws secret key from IAM service', 
+            bucket: 'bucket-name', 
+            region: 'aws region where S3 bucket is located', 
+            assetHost: 's3 bucket url' 
         }
+},
     },
 
     // ### Development **(default)**
@@ -111,15 +121,16 @@ config = {
     // ### Testing pg
     // Used by Travis - Automated testing run through GitHub
     'testing-pg': {
-        url: 'http://127.0.0.1:2369',
+        url: 'ec2-54-227-255-240.compute-1.amazonaws.com',
         database: {
-            client: 'pg',
+            client: 'postgres',
             connection: {
                 host     : '127.0.0.1',
-                user     : 'postgres',
-                password : '',
-                database : 'ghost_testing',
+                user     : 'rlqeeirpzobhlr',
+                password : '8SVtRTEorvUEG8fEzw3ztzmPjl',
+                database : 'dfsk2ap9c2gnmt',
                 charset  : 'utf8'
+                port:'5432'
             }
         },
         server: {
