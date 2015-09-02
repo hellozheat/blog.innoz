@@ -1,114 +1,59 @@
-<a href="https://github.com/TryGhost/Ghost"><img src="https://cloud.githubusercontent.com/assets/120485/6622822/c4c639fe-c8e7-11e4-9e64-5bec06c8b4c3.png" alt="Ghost" /></a>
-<a href="https://travis-ci.org/TryGhost/Ghost"><img align="right" src="https://travis-ci.org/TryGhost/Ghost.svg?branch=master" alt="Build status" /></a>
+# [Ghost](https://github.com/TryGhost/Ghost) on [Heroku](http://heroku.com)
 
-![Ghost Screenshot](https://cloud.githubusercontent.com/assets/120485/6626466/6dae46b2-c8ff-11e4-8c7c-8dd63b215f7b.jpg)
+Ghost is a free, open, simple blogging platform. Visit the project's website at <http://ghost.org>, or read the docs on <http://support.ghost.org>.
 
-![Ghost is a simple, powerful publishing platform that allows you to share your stories with the world.](https://cloud.githubusercontent.com/assets/120485/6626501/b2bb072c-c8ff-11e4-8e1a-2e78e68fd5c3.png)
+## Deploying on Heroku
 
-The project is maintained by a non-profit organisation called the **Ghost Foundation**, along with an amazing group of independent [contributors](https://github.com/TryGhost/Ghost/contributors). We're trying to make publishing software that changes the shape of online journalism.
+To get your own Ghost blog running on Heroku, click the button below:
 
-- [Ghost.org](https://ghost.org)
-- [Latest Release](https://ghost.org/download/)
-- [Support](http://support.ghost.org/)
-- [Theme Docs](http://themes.ghost.org)
-- [Contributing Guide](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md)
-- [Feature Requests](http://ideas.ghost.org/)
-- [Dev Blog](http://dev.ghost.org)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/cobyism/ghost-on-heroku)
 
+Fill out the form, and you should be cooking with gas in a few seconds.
 
-# Quick Start Install
+### Things you should know
 
-Make sure you've installed Node.js - We recommend the latest **Node v0.10.x** release.
+- After deployment, visit the admin area at `YOURAPPNAME.herokuapp.com/ghost` to set up your blog.
 
-Ghost is also compatible with **Node v0.12** and **io.js v1.2**, but please note that these versions are more likely to run into installation problems. May contain nuts. Please use the [forum](https://ghost.org/forum/installation/) for help.
+- Your blog will be publicly accessible at `YOURAPPNAME.herokuapp.com`.
 
-1. Download the [latest release](https://ghost.org/download/) of Ghost
-1. Unzip in the location you want to install
-1. Fire up a terminal
-1. `npm install --production`
-1. Start Ghost!
-    - Local environment: `npm start`
-    - On a server: `npm start --production`
-1. `http://localhost:2368/ghost` :tada:
+- To make changes to your Ghost blog (like adding a theme to the `/content` directory, for instance), clone your blog locally using the [Heroku Toolbelt](https://toolbelt.heroku.com/):
 
-More [install docs](http://support.ghost.org/installation/) here in case you got stuck.
+  ```sh
+  heroku git:clone --app YOURAPPNAME
+  ```
 
-<a name="getting-started"></a>
-# Developer Install (from git)
+### What do I put in the deployment and environment variable fields?
 
-Install Node.js. 
+- **App name (required)**. Pick a name for your application. Heroku says this field is optional, but it’s easier if you choose a name here, because you need to specify the URL of your blog in the first config field anyway. You can add a custom domain later if you want, but this is the name of the application you’ll see in your Heroku dashboard.
 
-```bash
-# Node v0.10.x - full support
-# Node v0.12.x and io.js v1.2 - partial support
-#
-# Choose wisely
-```
+- **Heroku URL (required)**. Take the name of your Heroku application, and put it into URL form. For example, if you choose `my-ghost-blog` as the app name, the Heroku URL config value needs to be `http://my-ghost-blog.herokuapp.com` (no trailing slash). If you subsequently set up a [custom domain](https://devcenter.heroku.com/articles/custom-domains) for your blog, you’ll need to update your Ghost blog’s `HEROKU_URL` environment variable accordingly.
 
-Clone :ghost:
+#### Using with file uploads disabled
 
-```bash
-git clone git://github.com/tryghost/ghost.git
-cd ghost
-```
+Heroku app filesystems [aren’t meant for permanent storage](https://devcenter.heroku.com/articles/dynos#ephemeral-filesystem), so file uploads are disabled by default when using this repository to deploy a Ghost blog to Heroku. If you’re using Ghost on Heroku with S3 file uploads disabled, you should leave all environment variables beginning with `S3_…` blank.
 
-Install grunt. No prizes here.
+#### Configuring S3 file uploads
 
-```bash
-npm install -g grunt-cli
-```
+To configure S3 file storage, create an S3 bucket on Amazon AWS, and then specify the following details as environment variables on the Heroku deployment page (or add these environment variables to your app after deployment via the Heroku dashboard):
 
-Install Ghost. If you're running locally, use [master](https://github.com/TryGhost/Ghost/tree/master). For production, use [stable](https://github.com/TryGhost/Ghost/tree/stable). :no_entry_sign::rocket::microscope:
+- `S3_ACCESS_KEY_ID` and `S3_ACCESS_SECRET_KEY`: **Required if using S3 uploads**. These fields are the AWS key/secret pair needed to authenticate with Amazon S3. You must have granted this keypair sufficient permissions on the S3 bucket in question in order for S3 uploads to work.
 
-```bash
-npm install
-```
+- `S3_BUCKET_NAME`: **Required if using S3 uploads**. This is the name you gave to your S3 bucket.
 
-Build the things!
+- `S3_BUCKET_REGION`: **Required if using S3 uploads**. Specify the region the bucket has been created in, using slug format (e.g. `us-east-1`, `eu-west-1`). A full list of S3 regions is [available here](http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region).
 
-```bash
-grunt init
-```
+- `S3_ASSET_HOST`: Optional, even if using S3 uploads. Use this variable to specify the S3 bucket URL in virtual host style, path style or using a custom domain. See [this page](http://docs.aws.amazon.com/AmazonS3/latest/dev/VirtualHosting.html) for details.
 
-Minify that shit for production?
+Once your app is up and running with these variables in place, you should be able to upload images via the Ghost interface and they’ll be stored in Amazon S3. :sparkles:
 
-```bash
-grunt prod
-```
+### How this works
 
-Start your engines.
+This repository is essentially a minimal web application that specifies [Ghost as a dependency](https://github.com/TryGhost/Ghost/wiki/Using-Ghost-as-an-NPM-module), and makes a deploy button available.
 
-```bash
-npm start
+## Problems?
 
-## running production? Add --production
-```
+If you have problems using your instance of Ghost, you should check the [official documentation](http://support.ghost.org/) or open an issue on [the official issue tracker](https://github.com/TryGhost/Ghost/issues). If you discover an issue with the deployment process provided by *this repository*, then [open an issue here](https://github.com/cobyism/ghost-on-heroku).
 
-Congrats! You made it. BTW you can also just `npm install ghost` if you're into that sort of thing. NPM afficionados can also read up on using [Ghost as an NPM module](https://github.com/TryGhost/Ghost/wiki/Using-Ghost-as-an-npm-module).
+## License
 
-More general [install docs](http://support.ghost.org/installation/) here in case you got stuck.
-
-
-# Deploying Ghost
-
-The easiest way to deploy Ghost is on our official <strong><a href="https://ghost.org/pricing/">Ghost(Pro)</a></strong> hosted platform. This service funds the Ghost Foundation, which makes actively maintaining this project possible.
-
-Also, you get to save yourself a lot of wasted time and headaches by deploying a new instance of Ghost to a managed server with a global content delivery network in just a few clicks.
-
-[Other options](http://support.ghost.org/deploying-ghost/) are available if you prefer playing around with servers by yourself.
-
-
-# Staying Up to Date
-
-When a new version of Ghost comes out, you'll want to look over these [upgrade instructions](http://support.ghost.org/how-to-upgrade/) for what to do next.
-
-You can talk to other Ghost users on [our forums](https://ghost.org/forum) or chat with Ghost developers in our [public Slack team](https://ghost.org/slack/) (it's pretty awesome). We have a public meeting every Tuesday at 5:30pm London time.
-
-New releases are announced on the [dev blog](http://dev.ghost.org/tag/releases/). You can subscribe by email or follow [@TryGhost_Dev](https://twitter.com/tryghost_dev) on Twitter, if you prefer your updates bite-sized and facetious.
-
-:saxophone::turtle:
-
-
-# Copyright & License
-
-Copyright (c) 2013-2015 Ghost Foundation - Released under the [MIT license](LICENSE).
+Released under the [MIT license](./LICENSE), just like the Ghost project itself.
